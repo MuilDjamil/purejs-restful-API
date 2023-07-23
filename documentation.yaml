@@ -1,0 +1,337 @@
+openapi: '3.0.2'
+info:
+  title: Todolist API
+  description: todolist api for CRUD operation
+  contact:
+    name: Muil Djamil
+    url: https://www.linkedin.com/in/muil-djamil/
+    email: muildjamil@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit/
+  version: '1.0.0'
+servers:
+  - url: https://{environment}.github.com/MuilDjamil/todolist-api
+    variables:
+      environment:
+        enum:
+          - dev
+          - qa
+          - prod
+        default: dev
+paths:
+  /list:
+    get:
+      security:
+        - TodolistAuth: []
+      tags:
+        - list
+      description: get todolist data from database
+      parameters:
+        - name: done
+          in: query
+          required: false
+          schema:
+            type: boolean
+            nullable: true
+            default: false
+          description: includes todolist with done status
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+            minLength: 1
+            maxLength: 100
+          examples:
+            javascript:
+              description: filter name with javascript in todolist
+              value: javascript
+            php:
+              description: filter name with php in todolist
+              value: php
+          description: todolist name filter
+      responses:
+        200:
+          description: success get todolist data from database
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items: 
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - priority
+                        - tags
+                      properties:
+                        id:
+                          type: string
+                          minLength: 1
+                        name:
+                          type: string
+                          minLength: 1
+                        priority:
+                          type: integer
+                          format: int32
+                          default: 1
+                        tags:
+                          type: array
+                          items:
+                            type: string
+                            minLength: 0
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      - id: '1'
+                        name: javascript
+                        priority: 5
+                        tags:
+                          - back-end
+                          - oop
+                          - functional
+                      - id: '2'
+                        name: PHP
+                        priority: 1
+                        tags:
+                          - back-end
+                          - functional
+    post:
+      security:
+        - TodolistAuth: []
+      tags:
+        - list
+      description: add new todolist to database
+      requestBody:
+        description: todolist payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPutPayloadSchema'
+            examples:
+              javascript:
+                value:
+                  name: javascript
+                  priority: 5
+                  tags:
+                    - back-end
+                    - oop
+                    - functional
+              php:
+                value:
+                  name: PHP
+                  priority: 1
+                  tags:
+                    - back-end
+                    - functional
+      responses:
+        201:
+          description: success add new todolist to database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostPutSuccessResponseSchema'
+              examples:
+                javascript:
+                  value:
+                    success: true
+                    message: Todolist added successfully
+                    data:
+                      todolistId: '1'
+                php:
+                  value:
+                    success: true
+                    message: Todolist added successfully
+                    data:
+                      todolistId: '2'
+        400:
+          description: fail add todolist to database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseSchema'
+              examples:
+                fail:
+                  value:
+                    success: false
+                    message: Fail adding todolist
+  /list/{id}:
+    put:
+      security:
+        - TodolistAuth: []
+      tags:
+        - list
+      description: update todolist in database
+      parameters:
+        - $ref: '#/components/parameters/TodolistIdPath'
+      requestBody:
+        description: todolist payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPutPayloadSchema'
+            examples:
+              javascript:
+                value:
+                  name: javascript edited
+                  priority: 1
+                  tags:
+                    - back-end
+                    - oop
+                    - functional
+              php:
+                value:
+                  name: PHP edited
+                  priority: 3
+                  tags:
+                    - back-end
+                    - functional        
+      responses:
+        200:
+          description: success update todolist item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostPutSuccessResponseSchema'
+              examples:
+                javascript:
+                  value:
+                    status: success
+                    message: Todolist update successfully
+                    data:
+                      todolistId: 1
+                php:
+                  value:
+                    status: success
+                    message: Todolist update successfully
+                    data:
+                      todolistId: 2
+
+        404:
+          description: fail update todolist item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseSchema'
+              examples:
+                fail:
+                  value:
+                    status: fail
+                    message: Todolist id not found
+
+    delete:
+      security:
+        - TodolistAuth: []
+      tags:
+        - list
+      description: delete todolist in database
+      parameters:
+        - $ref: '#/components/parameters/TodolistIdPath'
+      responses:
+        200:
+          description: success delete todolist item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseSchema'
+        404:
+          description: fail delete todolist item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseSchema'
+              examples:
+                fail:
+                  value:
+                    status: fail
+                    message: Todolist id not found
+components:
+  schemas:
+    PostPutPayloadSchema:
+      type: object
+      required:
+        - name
+        - priority
+        - tags
+      properties:
+        name:
+          type: string
+          minLength: 1
+        priority:
+          type: integer
+          format: int32
+          default: 1
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 0
+    PostPutSuccessResponseSchema:
+      type: object
+      required:
+        - success
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+          minLength: 10
+        data:
+          type: object
+          required:
+            - todolistId
+          properties:
+            todolistId:
+              type: string
+              minLength: 1        
+    StatusResponseSchema:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+          minLength: 10          
+  parameters:
+    TodolistIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 50
+      examples:
+        javascript:
+          description: todolist javascript id
+          value: '1'
+        php:
+          description: todolist php id
+          value: '2'
+  securitySchemes:
+    TodolistAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+    
+
