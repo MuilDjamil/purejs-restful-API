@@ -23,6 +23,7 @@ export class TodolistService {
         tags: body.tags,
       });
 
+      response.writeHead(201);
       response.end(JSON.stringify({
         success: true,
         message: 'Todolist berhasil ditambahkan',
@@ -40,6 +41,7 @@ export class TodolistService {
 
     const updateTodoIndex = this.todolist.findIndex((todo) => todo.id === parseInt(pathId));
     if (updateTodoIndex === -1) {
+      response.writeHead(404);
       response.end(JSON.stringify({
         success: false,
         message: 'Todolist tidak ditemukan',
@@ -73,6 +75,7 @@ export class TodolistService {
 
     const deleteTodoIndex = this.todolist.findIndex((todo) => todo.id === parseInt(pathId));
     if (deleteTodoIndex === -1) {
+      response.writeHead(404);
       response.end(JSON.stringify({
         success: false,
         message: 'Todolist tidak ditemukan',
